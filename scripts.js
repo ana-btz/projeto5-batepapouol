@@ -14,6 +14,8 @@ function enviaNome() {
     const request = axios.post("https://mock-api.driven.com.br/api/v6/uol/participants", nome);
     request.then(tratarSucesso); // se sucesso --> entrar na sala
     request.catch(tratarErro);
+
+    setInterval(reEnviaNome, 5000);
 }
 
 enviaNome();
@@ -35,4 +37,85 @@ function tratarSucesso(resposta) {
     alert(`Bem-vindo(a) ${nome.name} :)`);
     const statusCode = resposta.status;
     console.log(statusCode);
+}
+
+// PARA MANTER CONEXAO
+
+// Enquanto o usuário estiver na sala, a cada 5 segundos o site deve avisar ao servidor que o usuário
+// ainda está presente, ou senão será considerado que "Saiu da sala"
+function reEnviaNome() {
+    axios.post("https://mock-api.driven.com.br/api/v6/uol/status", nome);
+}
+
+// PARA BUSCAR MENSAGENS DO SERVIDOR
+
+function buscaMensagens() {
+    // requisicao get para buscar mensagens do servidor
+    const promise = axios.get("https://mock-api.driven.com.br/api/v6/uol/messages");
+    promise.then(processarResposta);
+}
+
+buscaMensagens();
+
+function processarResposta(resposta) {
+    console.log("Os dados do servidor chegaram");
+    console.log(resposta);
+    console.log(resposta.data);
+
+    const dadosMensagens = resposta.data;
+
+    renderizarMensagens(dadosMensagens);
+}
+
+function renderizarMensagens(dadosMensagens) {
+    const elemento_ul = document.querySelector("ul");
+    console.log(elemento_ul);
+
+    elemento_ul.innerHTML = "";
+
+    for (let i = 0; i < dadosMensagens.length; i++) {
+        const hora = dadosMensagens[i].time,
+            usuario = dadosMensagens[i].from,
+            destinatario = dadosMensagens[i].to,
+            texto = dadosMensagens[i].text;
+
+        let mensagem = "";
+
+        if (dadosMensagens[i].type === "status") {
+            mensagem = `
+                <li class="mensagens status">
+                    <span class="hora-da-postagem">${hora}</span>
+                    <span class="user">${usuario}</span>
+                    <span class="mensagem">${texto}</span>
+                </li>
+            `
+            elemento_ul.innerHTML += mensagem;
+        }
+
+        if (dadosMensagens[i].type === "message") {
+            mensagem = `
+                <li class="mensagens normal">
+                    <span class="hora-da-postagem">${hora}</span>
+                    <span class="user">${usuario}</span>
+                    <span class="mensagem">para</span>
+                    <span class="user">${destinatario}:</span>
+                    <span class="mensagem">${texto}</span>
+                </li>
+            `
+            elemento_ul.innerHTML += mensagem;
+        }
+
+        if (dadosMensagens[i].type === "private_message") {
+            mensagem = `
+                <li class="mensagens reservada">
+                    <span class="hora-da-postagem">${hora}</span>
+                    <span class="user">${usuario}</span>
+                    <span class="mensagem">reservadamente para</span>
+                    <span class="user">${destinatario}:</span>
+                    <span class="mensagem">${texto}</span>
+                </li>
+            `
+            elemento_ul.innerHTML += mensagem;
+        }
+    }
 }
