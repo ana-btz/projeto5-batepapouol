@@ -13,12 +13,10 @@ function enviaNome() {
     // requisicao post para enviar o nome ao servidor:
     const request = axios.post("https://mock-api.driven.com.br/api/v6/uol/participants", nome);
     request.then(tratarSucesso); // se sucesso --> entrar na sala
-    request.catch(tratarErro);
-
-    setInterval(reEnviaNome, 5000);
+    request.catch(tratarErro); 
 }
-
 enviaNome();
+atualizaNome();
 
 // O servidor pode responder com status 400 se já houver um usuário online com esse nome
 // Se for o caso, a aplicação deve pedir um novo nome até que o servidor responda com status 200
@@ -45,6 +43,11 @@ function tratarSucesso(resposta) {
 // ainda está presente, ou senão será considerado que "Saiu da sala"
 function reEnviaNome() {
     axios.post("https://mock-api.driven.com.br/api/v6/uol/status", nome);
+    console.log("o nome chegou");
+}
+
+function atualizaNome() {
+    setInterval(reEnviaNome, 5000);
 }
 
 // PARA BUSCAR MENSAGENS DO SERVIDOR
@@ -105,7 +108,7 @@ function renderizarMensagens(dadosMensagens) {
             elemento_ul.innerHTML += mensagem;
         }
 
-        if (dadosMensagens[i].type === "private_message") {
+        if ( (dadosMensagens[i].type === "private_message") && (dadosMensagens[i].destinatario === nome.name) ) {
             mensagem = `
                 <li class="mensagens reservada">
                     <span class="hora-da-postagem">${hora}</span>
@@ -117,5 +120,31 @@ function renderizarMensagens(dadosMensagens) {
             `
             elemento_ul.innerHTML += mensagem;
         }
+        // mensagem.scrollIntoView();
     }
+
+    setInterval(buscaMensagens, 3000);
+    // A cada 3 segundos o site deve recarregar as mensagens do servidor para manter sempre atualizado
+}
+
+// Ao enviar uma mensagem, esta deve ser enviada para o servidor
+// Caso o servidor responda com sucesso, você deve obter novamente as mensagens do servidor e atualizar o chat
+// Caso o servidor responda com erro, significa que esse usuário não está mais na sala e a página deve ser atualizada
+// (e com isso voltando pra etapa de pedir o nome). Dica: experimente usar window.location.reload()
+
+function enviaMensagem() {  
+    const userInput = document.querySelector("input").value;
+    const infoUsuario = {
+        from: nome.name,
+        to: "Todos",
+        text: userInput,
+        type: "message"
+    }
+    const requisicao = axios.post("https://mock-api.driven.com.br/api/v6/uol/messages",infoUsuario);
+    // requisicao.then(mostraMensagem);
+    requisicao.catch(atualizaPagina);
+}
+
+function atualizaPagina() {
+    window.location.reload();
 }
