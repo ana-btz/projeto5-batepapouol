@@ -13,7 +13,7 @@ function enviaNome() {
     // requisicao post para enviar o nome ao servidor:
     const request = axios.post("https://mock-api.driven.com.br/api/v6/uol/participants", nome);
     request.then(tratarSucesso); // se sucesso --> entrar na sala
-    request.catch(tratarErro); 
+    request.catch(tratarErro);
 }
 enviaNome();
 atualizaNome();
@@ -93,6 +93,9 @@ function renderizarMensagens(dadosMensagens) {
                 </li>
             `
             elemento_ul.innerHTML += mensagem;
+
+            const elemento_li = document.querySelector("li");
+            elemento_li.scrollIntoView(false);
         }
 
         if (dadosMensagens[i].type === "message") {
@@ -106,9 +109,12 @@ function renderizarMensagens(dadosMensagens) {
                 </li>
             `
             elemento_ul.innerHTML += mensagem;
+
+            const elemento_li = document.querySelector("li");
+            elemento_li.scrollIntoView(false);
         }
 
-        if ( (dadosMensagens[i].type === "private_message") && (dadosMensagens[i].destinatario === nome.name) ) {
+        if ((dadosMensagens[i].type === "private_message") && (dadosMensagens[i].destinatario === nome.name)) {
             mensagem = `
                 <li class="mensagens reservada">
                     <span class="hora-da-postagem">${hora}</span>
@@ -119,8 +125,10 @@ function renderizarMensagens(dadosMensagens) {
                 </li>
             `
             elemento_ul.innerHTML += mensagem;
+
+            const elemento_li = document.querySelector("li");
+            elemento_li.scrollIntoView(false);
         }
-        // mensagem.scrollIntoView();
     }
 
     setInterval(buscaMensagens, 3000);
@@ -132,7 +140,7 @@ function renderizarMensagens(dadosMensagens) {
 // Caso o servidor responda com erro, significa que esse usuário não está mais na sala e a página deve ser atualizada
 // (e com isso voltando pra etapa de pedir o nome). Dica: experimente usar window.location.reload()
 
-function enviaMensagem() {  
+function enviaMensagem() {
     const userInput = document.querySelector("input").value;
     const infoUsuario = {
         from: nome.name,
@@ -140,7 +148,7 @@ function enviaMensagem() {
         text: userInput,
         type: "message"
     }
-    const requisicao = axios.post("https://mock-api.driven.com.br/api/v6/uol/messages",infoUsuario);
+    const requisicao = axios.post("https://mock-api.driven.com.br/api/v6/uol/messages", infoUsuario);
     // requisicao.then(mostraMensagem);
     requisicao.catch(atualizaPagina);
 }
